@@ -2,7 +2,7 @@
 
 > New in version 3.16.0
 
-The show document request is sent from a server to a client to ask the client to display a particular document in the user interface.
+The show document request is sent from a server to a client to ask the client to display a particular resource referenced by a URI in the user interface.
 
 _Client Capability_:
 * property path (optional): `window.showDocument`
@@ -31,20 +31,20 @@ _Request_:
 
 ```typescript
 /**
- * Params to show a document.
+ * Params to show a resource.
  *
  * @since 3.16.0
  */
 export interface ShowDocumentParams {
 	/**
-	 * The document uri to show.
+	 * The URI to show.
 	 */
 	uri: URI;
 
 	/**
 	 * Indicates to show the resource in an external program.
-	 * To show for example `https://code.visualstudio.com/`
-	 * in the default WEB browser set `external` to `true`.
+	 * To show, for example, `https://code.visualstudio.com/`
+	 * in the default web browser, set `external` to `true`.
 	 */
 	external?: boolean;
 
@@ -58,7 +58,7 @@ export interface ShowDocumentParams {
 
 	/**
 	 * An optional selection range if the document is a text
-	 * document. Clients might ignore the property if an
+	 * document. Clients might ignore this property if an
 	 * external program is started or the file is not a text
 	 * file.
 	 */
@@ -74,7 +74,7 @@ _Response_:
 
 ```typescript
 /**
- * The result of an show document request.
+ * The result of a show document request.
  *
  * @since 3.16.0
  */

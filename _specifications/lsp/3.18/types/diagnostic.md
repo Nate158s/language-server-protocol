@@ -1,5 +1,9 @@
 #### <a href="#diagnostic" name="diagnostic" class="anchor"> Diagnostic </a>
 
+- New in version 3.18: support for markup content in diagnostic messages. The support is guarded by the
+client capability `textDocument.diagnostic.markupMessageSupport`. If a client doesn't signal the capability,
+servers shouldn't send `MarkupContent` diagnostic messages back to the client.
+
 Represents a diagnostic, such as a compiler error or warning. Diagnostic objects are only valid in the scope of a resource.
 
 ```typescript
@@ -10,8 +14,10 @@ export interface Diagnostic {
 	range: Range;
 
 	/**
-	 * The diagnostic's severity. Can be omitted. If omitted it is up to the
-	 * client to interpret diagnostics as error, warning, info or hint.
+	 * The diagnostic's severity. To avoid interpretation mismatches when a
+	 * server is used with different clients it is highly recommended that
+	 * servers always provide a severity value. If omitted, it’s recommended
+	 * for the client to interpret it as an Error severity.
 	 */
 	severity?: DiagnosticSeverity;
 
@@ -35,8 +41,11 @@ export interface Diagnostic {
 
 	/**
 	 * The diagnostic's message.
+	 *
+	 * @since 3.18.0 - support for MarkupContent. This is guarded by the client
+	 * capability `textDocument.diagnostic.markupMessageSupport`.
 	 */
-	message: string;
+	message: string | MarkupContent;
 
 	/**
 	 * Additional metadata about the diagnostic.
@@ -58,7 +67,7 @@ export interface Diagnostic {
 	 *
 	 * @since 3.16.0
 	 */
-	data?: unknown;
+	data?: LSPAny;
 }
 ```
 
@@ -77,7 +86,7 @@ export namespace DiagnosticSeverity {
 	 */
 	export const Warning: 2 = 2;
 	/**
-	 * Reports an information.
+	 * Reports information.
 	 */
 	export const Information: 3 = 3;
 	/**
@@ -108,7 +117,7 @@ export namespace DiagnosticTag {
 	/**
 	 * Deprecated or obsolete code.
 	 *
-	 * Clients are allowed to rendered diagnostics with this tag strike through.
+	 * Clients are allowed to render diagnostics with this tag strike through.
 	 */
 	export const Deprecated: 2 = 2;
 }
@@ -124,7 +133,7 @@ export type DiagnosticTag = 1 | 2;
 /**
  * Represents a related message and source code location for a diagnostic.
  * This should be used to point to code locations that cause or are related to
- * a diagnostics, e.g when duplicating a symbol in a scope.
+ * a diagnostic, e.g. when duplicating a symbol in a scope.
  */
 export interface DiagnosticRelatedInformation {
 	/**
@@ -151,7 +160,7 @@ export interface DiagnosticRelatedInformation {
  */
 export interface CodeDescription {
 	/**
-	 * An URI to open with more information about the diagnostic error.
+	 * A URI to open with more information about the diagnostic error.
 	 */
 	href: URI;
 }

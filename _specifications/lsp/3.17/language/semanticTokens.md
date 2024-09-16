@@ -37,7 +37,7 @@ export enum SemanticTokenTypes {
 	string = 'string',
 	number = 'number',
 	regexp = 'regexp',
-	operator = 'operator'
+	operator = 'operator',
 	/**
 	 * @since 3.17.0
 	 */
@@ -99,8 +99,8 @@ so a `tokenModifier` value of `3` is first viewed as binary `0b00000011`, which 
 
 There are different ways how the position of a token can be expressed in a file. Absolute positions or relative positions. The protocol for the token format `relative` uses relative positions, because most tokens remain stable relative to each other when edits are made in a file. This simplifies the computation of a delta if a server supports it. So each token is represented using 5 integers. A specific token `i` in the file consists of the following array indices:
 
-- at index `5*i`   - `deltaLine`: token line number, relative to the previous token
-- at index `5*i+1` - `deltaStart`: token start character, relative to the previous token (relative to 0 or the previous token's start if they are on the same line)
+- at index `5*i`   - `deltaLine`: token line number, relative to the start of the previous token
+- at index `5*i+1` - `deltaStart`: token start character, relative to the start of the previous token (relative to 0 or the previous token's start if they are on the same line)
 - at index `5*i+2` - `length`: the length of the token.
 - at index `5*i+3` - `tokenType`: will be looked up in `SemanticTokensLegend.tokenTypes`. We currently ask that `tokenType` < 65536.
 - at index `5*i+4` - `tokenModifiers`: each set bit will be looked up in `SemanticTokensLegend.tokenModifiers`
@@ -462,7 +462,8 @@ There are two uses cases where it can be beneficial to only compute semantic tok
 - for faster rendering of the tokens in the user interface when a user opens a file. In this use cases servers should also implement the `textDocument/semanticTokens/full` request as well to allow for flicker free scrolling and semantic coloring of a minimap.
 - if computing semantic tokens for a full document is too expensive servers can only provide a range call. In this case the client might not render a minimap correctly or might even decide to not show any semantic tokens at all.
 
-A server is allowed to compute the semantic tokens for a broader range than requested by the client. However if the server does the semantic tokens for the broader range must be complete and correct.
+A server is allowed to compute the semantic tokens for a broader range than requested by the client. However if the server does the semantic tokens for the broader range must be complete and correct. If a token at the beginning or end only partially overlaps with the requested range the server should include those tokens in the response.
+
 
 _Request_:
 

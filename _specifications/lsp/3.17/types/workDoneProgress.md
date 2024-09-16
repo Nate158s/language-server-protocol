@@ -40,10 +40,10 @@ export interface WorkDoneProgressBegin {
 	/**
 	 * Optional progress percentage to display (value 100 is considered 100%).
 	 * If not provided infinite progress is assumed and clients are allowed
-	 * to ignore the `percentage` value in subsequent in report notifications.
+	 * to ignore the `percentage` value in subsequent report notifications.
 	 *
 	 * The value should be steadily rising. Clients are free to ignore values
-	 * that are not following this rule. The value range is [0, 100]
+	 * that are not following this rule. The value range is [0, 100].
 	 */
 	percentage?: uinteger;
 }
@@ -79,10 +79,10 @@ export interface WorkDoneProgressReport {
 	/**
 	 * Optional progress percentage to display (value 100 is considered 100%).
 	 * If not provided infinite progress is assumed and clients are allowed
-	 * to ignore the `percentage` value in subsequent in report notifications.
+	 * to ignore the `percentage` value in subsequent report notifications.
 	 *
 	 * The value should be steadily rising. Clients are free to ignore values
-	 * that are not following this rule. The value range is [0, 100]
+	 * that are not following this rule. The value range is [0, 100].
 	 */
 	percentage?: uinteger;
 }
@@ -162,7 +162,8 @@ A server uses the `workDoneToken` to report progress for the specific `textDocum
 }
 ```
 
-The token received via the `workDoneToken` property in a request's param literal is only valid as long as the request has not send a response back.
+The token received via the `workDoneToken` property in a request's param literal is only valid as long as the request has not send a response back. Canceling work done progress is done by simply
+canceling the corresponding request.
 
 There is no specific client capability signaling whether a client will send a progress token per request. The reason for this is that this is in many clients not a static aspect and might even change for every request instance for the same request type. So the capability is signal on every request instance by the presence of a `workDoneToken` property.
 

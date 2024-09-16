@@ -1,6 +1,6 @@
 #### <a href="#documentFilter" name="documentFilter" class="anchor"> DocumentFilter </a>
 
-A document filter denotes a document through properties like `language`, `scheme` or `pattern`. An example is a filter that applies to TypeScript files on disk. Another example is a filter the applies to JSON files with name `package.json`:
+A document filter denotes a document through properties like `language`, `scheme` or `pattern`. An example is a filter that applies to TypeScript files on disk. Another example is a filter that applies to JSON files with name `package.json`:
 ```typescript
 { language: 'typescript', scheme: 'file' }
 { language: 'json', pattern: '**/package.json' }
@@ -14,7 +14,7 @@ export interface DocumentFilter {
 	language?: string;
 
 	/**
-	 * A Uri [scheme](#Uri.scheme), like `file` or `untitled`.
+	 * A Uri scheme, like `file` or `untitled`.
 	 */
 	scheme?: string;
 
@@ -33,11 +33,11 @@ export interface DocumentFilter {
 	 *   (e.g., `example.[!0-9]` to match on `example.a`, `example.b`, but
 	 *   not `example.0`)
 	 */
-	pattern?: string;
+	pattern?: GlobPattern;
 }
 ```
 
-Please note that for a document filter to be valid at least one of the properties for `language`, `scheme`, or `pattern` must be set. To keep the type definition simple all properties are marked as optional.
+Please note that for a document filter to be valid, at least one of the properties for `language`, `scheme`, or `pattern` must be set. To keep the type definition simple, all properties are marked as optional.
 
 A document selector is the combination of one or more document filters.
 

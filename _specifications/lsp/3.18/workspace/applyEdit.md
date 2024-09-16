@@ -18,7 +18,7 @@ _Request_:
 export interface ApplyWorkspaceEditParams {
 	/**
 	 * An optional label of the workspace edit. This label is
-	 * presented in the user interface for example on an undo
+	 * presented in the user interface, for example, on an undo
 	 * stack to undo the workspace edit.
 	 */
 	label?: string;
@@ -27,6 +27,31 @@ export interface ApplyWorkspaceEditParams {
 	 * The edits to apply.
 	 */
 	edit: WorkspaceEdit;
+
+	/**
+	 * Additional data about the edit.
+	 *
+	 * @since 3.18.0
+	 * @proposed
+	 */
+	metadata?: WorkspaceEditMetadata;
+}
+```
+
+<div class="anchorHolder"><a href="#workspaceEditMetadata" name="workspaceEditMetadata" class="linkableAnchor"></a></div>
+
+```typescript
+/**
+ * Additional data about a workspace edit.
+ *
+ * @since 3.18.0
+ * @proposed
+ */
+export interface WorkspaceEditMetadata {
+	/**
+	 * Signal to the editor that this edit is a refactoring.
+	 */
+	isRefactoring?: boolean;
 }
 ```
 
@@ -50,7 +75,7 @@ export interface ApplyWorkspaceEditResult {
 	failureReason?: string;
 
 	/**
-	 * Depending on the client's failure handling strategy `failedChange`
+	 * Depending on the client's failure handling strategy, `failedChange`
 	 * might contain the index of the change that failed. This property is
 	 * only available if the client signals a `failureHandling` strategy
 	 * in its client capabilities.

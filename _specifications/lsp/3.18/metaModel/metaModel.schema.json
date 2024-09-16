@@ -94,6 +94,10 @@
       "additionalProperties": false,
       "description": "Defines an enumeration.",
       "properties": {
+        "deprecated": {
+          "description": "Whether the enumeration is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation.",
           "type": "string"
@@ -109,6 +113,13 @@
         "since": {
           "description": "Since when (release number) this enumeration is available. Is undefined if not known.",
           "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "supportsCustomValues": {
           "description": "Whether the enumeration supports custom values (e.g. values which are not part of the set defined in `values`). If omitted no custom values are supported.",
@@ -137,6 +148,10 @@
       "additionalProperties": false,
       "description": "Defines an enumeration entry.",
       "properties": {
+        "deprecated": {
+          "description": "Whether the enum entry is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation.",
           "type": "string"
@@ -152,6 +167,13 @@
         "since": {
           "description": "Since when (release number) this enumeration entry is available. Is undefined if not known.",
           "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "value": {
           "description": "The value.",
@@ -340,6 +362,10 @@
       "additionalProperties": false,
       "description": "Represents a LSP notification",
       "properties": {
+        "deprecated": {
+          "description": "Whether the notification is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation;",
           "type": "string"
@@ -349,7 +375,7 @@
           "description": "The direction in which this notification is sent in the protocol."
         },
         "method": {
-          "description": "The request's method name.",
+          "description": "The notifications's method name.",
           "type": "string"
         },
         "params": {
@@ -371,7 +397,7 @@
           "type": "boolean"
         },
         "registrationMethod": {
-          "description": "Optional a dynamic registration method if it different from the request's method.",
+          "description": "Optional a dynamic registration method if it different from the notifications's method.",
           "type": "string"
         },
         "registrationOptions": {
@@ -380,6 +406,17 @@
         },
         "since": {
           "description": "Since when (release number) this notification is available. Is undefined if not known.",
+          "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "typeName": {
+          "description": "The type name of the notifications if any.",
           "type": "string"
         }
       },
@@ -414,6 +451,10 @@
       "additionalProperties": false,
       "description": "Represents an object property.",
       "properties": {
+        "deprecated": {
+          "description": "Whether the property is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation.",
           "type": "string"
@@ -433,6 +474,13 @@
         "since": {
           "description": "Since when (release number) this property is available. Is undefined if not known.",
           "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "type": {
           "$ref": "#/definitions/Type",
@@ -467,6 +515,10 @@
       "additionalProperties": false,
       "description": "Represents a LSP request",
       "properties": {
+        "deprecated": {
+          "description": "Whether the request is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation;",
           "type": "string"
@@ -520,6 +572,17 @@
         "since": {
           "description": "Since when (release number) this request is available. Is undefined if not known.",
           "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "typeName": {
+          "description": "The type name of the request if any.",
+          "type": "string"
         }
       },
       "required": [
@@ -551,6 +614,10 @@
       "additionalProperties": false,
       "description": "Defines the structure of an object literal.",
       "properties": {
+        "deprecated": {
+          "description": "Whether the structure is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation;",
           "type": "string"
@@ -587,6 +654,13 @@
         "since": {
           "description": "Since when (release number) this structure is available. Is undefined if not known.",
           "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -597,8 +671,12 @@
     },
     "StructureLiteral": {
       "additionalProperties": false,
-      "description": "Defines a unnamed structure of an object literal.",
+      "description": "Defines an unnamed structure of an object literal.",
       "properties": {
+        "deprecated": {
+          "description": "Whether the literal is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation.",
           "type": "string"
@@ -617,6 +695,13 @@
         "since": {
           "description": "Since when (release number) this structure is available. Is undefined if not known.",
           "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -704,6 +789,10 @@
       "additionalProperties": false,
       "description": "Defines a type alias. (e.g. `type Definition = Location | LocationLink`)",
       "properties": {
+        "deprecated": {
+          "description": "Whether the type alias is deprecated or not. If deprecated the property contains the deprecation message.",
+          "type": "string"
+        },
         "documentation": {
           "description": "An optional documentation.",
           "type": "string"
@@ -719,6 +808,13 @@
         "since": {
           "description": "Since when (release number) this structure is available. Is undefined if not known.",
           "type": "string"
+        },
+        "sinceTags": {
+          "description": "All since tags in case there was more than one tag. Is undefined if not known.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "type": {
           "$ref": "#/definitions/Type",

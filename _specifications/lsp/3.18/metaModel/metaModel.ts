@@ -131,6 +131,11 @@ export type Request = {
 	method: string;
 
 	/**
+	 * The type name of the request if any.
+	 */
+	typeName?: string;
+
+	/**
 	 * The parameter type(s) if any.
 	 */
 	params?: Type | Type[];
@@ -181,10 +186,22 @@ export type Request = {
 	since?: string;
 
 	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
+	/**
 	 * Whether this is a proposed feature. If omitted
 	 * the feature is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the request is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 /**
@@ -192,9 +209,14 @@ export type Request = {
  */
 export type Notification = {
 	/**
-	 * The request's method name.
+	 * The notifications's method name.
 	 */
 	method: string;
+
+	/**
+	 * The type name of the notifications if any.
+	 */
+	typeName?: string;
 
 	/**
 	 * The parameter type(s) if any.
@@ -203,7 +225,7 @@ export type Notification = {
 
 	/**
 	 * Optional a dynamic registration method if it
-	 * different from the request's method.
+	 * different from the notifications's method.
 	 */
 	registrationMethod?: string;
 
@@ -230,11 +252,23 @@ export type Notification = {
 	 */
 	since?: string;
 
-	 /**
+	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
+	/**
 	 * Whether this is a proposed notification. If omitted
 	 * the notification is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the notification is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 /**
@@ -269,10 +303,22 @@ export type Property = {
 	since?: string;
 
 	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
+	/**
 	 * Whether this is a proposed property. If omitted,
 	 * the structure is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the property is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 /**
@@ -315,14 +361,26 @@ export type Structure = {
 	since?: string;
 
 	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
+	/**
 	 * Whether this is a proposed structure. If omitted,
 	 * the structure is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the structure is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 /**
- * Defines a unnamed structure of an object literal.
+ * Defines an unnamed structure of an object literal.
  */
 export type StructureLiteral = {
 
@@ -343,10 +401,22 @@ export type StructureLiteral = {
 	since?: string;
 
 	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
+	/**
 	 * Whether this is a proposed structure. If omitted,
 	 * the structure is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the literal is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 /**
@@ -375,11 +445,23 @@ export type TypeAlias = {
 	 */
 	since?: string;
 
+	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
 	 /**
 	 * Whether this is a proposed type alias. If omitted,
 	 * the type alias is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the type alias is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 /**
@@ -407,11 +489,23 @@ export type EnumerationEntry = {
 	 */
 	since?: string;
 
+	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
 	 /**
 	 * Whether this is a proposed enumeration entry. If omitted,
 	 * the enumeration entry is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the enum entry is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 export type EnumerationType = { kind: 'base'; name: 'string' | 'integer' | 'uinteger' };
@@ -453,11 +547,23 @@ export type Enumeration = {
 	 */
 	since?: string;
 
+	/**
+	 * All since tags in case there was more than one tag.
+	 * Is undefined if not known.
+	 */
+	sinceTags?: string[];
+
 	 /**
 	 * Whether this is a proposed enumeration. If omitted,
 	 * the enumeration is final.
 	 */
 	proposed?: boolean;
+
+	/**
+	 * Whether the enumeration is deprecated or not. If deprecated
+	 * the property contains the deprecation message.
+	 */
+	deprecated?: string;
 };
 
 export type MetaData = {

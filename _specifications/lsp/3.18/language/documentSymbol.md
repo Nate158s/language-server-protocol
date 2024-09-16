@@ -149,7 +149,8 @@ export namespace SymbolKind {
 	export const TypeParameter = 26;
 }
 
-export type SymbolKind = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26;
+export type SymbolKind = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
+	14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26;
 ```
 
 <div class="anchorHolder"><a href="#symbolTag" name="symbolTag" class="linkableAnchor"></a></div>
@@ -177,8 +178,8 @@ export type SymbolTag = 1;
 /**
  * Represents programming constructs like variables, classes, interfaces etc.
  * that appear in a document. Document symbols can be hierarchical and they
- * have two ranges: one that encloses its definition and one that points to its
- * most interesting range, e.g. the range of an identifier.
+ * have two ranges: one that encloses their definition and one that points to
+ * their most interesting range, e.g. the range of an identifier.
  */
 export interface DocumentSymbol {
 
@@ -190,7 +191,7 @@ export interface DocumentSymbol {
 	name: string;
 
 	/**
-	 * More detail for this symbol, e.g the signature of a function.
+	 * More detail for this symbol, e.g. the signature of a function.
 	 */
 	detail?: string;
 
@@ -215,8 +216,8 @@ export interface DocumentSymbol {
 
 	/**
 	 * The range enclosing this symbol not including leading/trailing whitespace
-	 * but everything else like comments. This information is typically used to
-	 * determine if the clients cursor is inside the symbol to reveal in the
+	 * but everything else, like comments. This information is typically used to
+	 * determine if the client's cursor is inside the symbol to reveal the
 	 * symbol in the UI.
 	 */
 	range: Range;
@@ -275,7 +276,7 @@ export interface SymbolInformation {
 	 * the range usually spans more then the actual symbol's name and does
 	 * normally include things like visibility modifiers.
 	 *
-	 * The range doesn't have to denote a node range in the sense of a abstract
+	 * The range doesn't have to denote a node range in the sense of an abstract
 	 * syntax tree. It can therefore not be used to re-construct a hierarchy of
 	 * the symbols.
 	 */

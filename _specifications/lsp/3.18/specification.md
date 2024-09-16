@@ -41,7 +41,7 @@ The header part is encoded using the 'ascii' encoding. This includes the '\r\n' 
 
 ### <a href="#contentPart" name="contentPart" class="anchor"> Content Part </a>
 
-Contains the actual content of the message. The content part of a message uses [JSON-RPC](http://www.jsonrpc.org/) to describe requests, responses and notifications. The content part is encoded using the charset provided in the Content-Type field. It defaults to `utf-8`, which is the only encoding supported right now. If a server or client receives a header with a different encoding than `utf-8` it should respond with an error.
+Contains the actual content of the message. The content part of a message uses [JSON-RPC 2.0](https://www.jsonrpc.org/specification) to describe requests, responses and notifications. The content part is encoded using the charset provided in the Content-Type field. It defaults to `utf-8`, which is the only encoding supported right now. If a server or client receives a header with a different encoding than `utf-8` it should respond with an error.
 
 (Prior versions of the protocol used the string constant `utf8` which is not a correct encoding constant according to [specification](http://www.iana.org/assignments/character-sets/character-sets.xhtml).) For backwards compatibility it is highly recommended that a client and a server treats the string `utf8` as `utf-8`.
 
@@ -53,7 +53,7 @@ Content-Length: ...\r\n
 {
 	"jsonrpc": "2.0",
 	"id": 1,
-	"method": "textDocument/didOpen",
+	"method": "textDocument/completion",
 	"params": {
 		...
 	}
@@ -61,11 +61,13 @@ Content-Length: ...\r\n
 ```
 ### Base Protocol JSON structures
 
-The following TypeScript definitions describe the base [JSON-RPC protocol](http://www.jsonrpc.org/specification):
+The protocol uses request, response, and notification objects as specified in the [JSON-RPC protocol](http://www.jsonrpc.org/specification). The protocol currently does not support JSON-RPC batch messages; protocol clients and servers must not send JSON-RPC requests.
+
+The following TypeScript definitions describe the base JSON-RPC protocol:
 
 #### <a href="#baseTypes" name="baseTypes" class="anchor"> Base Types </a>
 
-The protocol use the following definitions for integers, unsigned integers, decimal numbers, objects and arrays:
+The protocol uses the following definitions for integers, unsigned integers, decimal numbers, objects and arrays:
 
 <div class="anchorHolder"><a href="#integer" name="integer" class="linkableAnchor"></a></div>
 
@@ -90,10 +92,10 @@ export type uinteger = number;
 ```typescript
 /**
  * Defines a decimal number. Since decimal numbers are very
- * rare in the language server specification we denote the
+ * rare in the language server specification, we denote the
  * exact range with every decimal using the mathematics
- * interval notation (e.g. [0, 1] denotes all decimals d with
- * 0 <= d <= 1.
+ * interval notation (e.g., [0, 1] denotes all decimals d with
+ * 0 <= d <= 1.)
  */
 export type decimal = number;
 ```
@@ -102,7 +104,7 @@ export type decimal = number;
 
 ```typescript
 /**
- * The LSP any type
+ * The LSP any type.
  *
  * @since 3.17.0
  */
@@ -182,7 +184,7 @@ interface ResponseMessage extends Message {
 	 * The result of a request. This member is REQUIRED on success.
 	 * This member MUST NOT exist if there was an error invoking the method.
 	 */
-	result?: string | number | boolean | object | null;
+	result?: LSPAny;
 
 	/**
 	 * The error object in case a request fails.
@@ -209,7 +211,7 @@ interface ResponseError {
 	 * A primitive or structured value that contains additional
 	 * information about the error. Can be omitted.
 	 */
-	data?: string | number | boolean | array | object | null;
+	data?: LSPAny;
 }
 ```
 
@@ -285,7 +287,7 @@ export namespace ErrorCodes {
 	 * The server detected that the content of a document got
 	 * modified outside normal conditions. A server should
 	 * NOT send this error code if it detects a content change
-	 * in it unprocessed messages. The result even computed
+	 * in its unprocessed messages. The result even computed
 	 * on an older state might still be useful for the client.
 	 *
 	 * If a client decides that a result is not of any use anymore
@@ -294,7 +296,7 @@ export namespace ErrorCodes {
 	export const ContentModified: integer = -32801;
 
 	/**
-	 * The client has canceled a request and a server as detected
+	 * The client has canceled a request and a server has detected
 	 * the cancel.
 	 */
 	export const RequestCancelled: integer = -32800;
@@ -347,13 +349,13 @@ interface CancelParams {
 }
 ```
 
-A request that got canceled still needs to return from the server and send a response back. It can not be left open / hanging. This is in line with the JSON-RPC protocol that requires that every request sends a response back. In addition it allows for returning partial results on cancel. If the request returns an error response on cancellation it is advised to set the error code to `ErrorCodes.RequestCancelled`.
+A request that got canceled still needs to return from the server and send a response back. It can not be left open / hanging. This is in line with the JSON-RPC protocol that requires that every request sends a response back. In addition, it allows for returning partial results on cancel. If the request returns an error response on cancellation it is advised to set the error code to `ErrorCodes.RequestCancelled`.
 
 #### <a href="#progress" name="progress" class="anchor"> Progress Support (:arrow_right: :arrow_left:)</a>
 
 > *Since version 3.15.0*
 
-The base protocol offers also support to report progress in a generic fashion. This mechanism can be used to report any kind of progress including [work done progress](#workDoneProgress) (usually used to report progress in the user interface using a progress bar) and partial result progress to support streaming of results.
+The base protocol also offers support to report progress in a generic fashion. This mechanism can be used to report any kind of progress including [work done progress](#workDoneProgress) (usually used to report progress in the user interface using a progress bar) and partial result progress to support streaming of results.
 
 A progress notification has the following properties:
 
@@ -383,9 +385,9 @@ Progress is reported against a token. The token is different than the request ID
 
 ## <a href="#languageServerProtocol" name="languageServerProtocol" class="anchor"> Language Server Protocol </a>
 
-The language server protocol defines a set of JSON-RPC request, response and notification messages which are exchanged using the above base protocol. This section starts describing the basic JSON structures used in the protocol. The document uses TypeScript interfaces in strict mode to describe these. This means for example that a `null` value has to be explicitly listed and that a mandatory property must be listed even if a falsify value might exist. Based on the basic JSON structures, the actual requests with their responses and the notifications are described.
+The language server protocol defines a set of JSON-RPC request, response and notification messages which are exchanged using the above base protocol. This section starts describing the basic JSON structures used in the protocol. The document uses TypeScript interfaces in strict mode to describe these. This means, for example, that a `null` value has to be explicitly listed and that a mandatory property must be listed even if a falsy value might exist. Based on the basic JSON structures, the actual requests with their responses and the notifications are described.
 
-An example would be a request send from the client to the server to request a hover value for a symbol at a certain position in a text document. The request's method would be `textDocument/hover` with a parameter like this:
+An example would be a request sent from the client to the server to request a hover value for a symbol at a certain position in a text document. The request's method would be `textDocument/hover` with a parameter like this:
 
 ```typescript
 interface HoverParams {
@@ -416,29 +418,29 @@ The set of capabilities is exchanged between the client and server during the [i
 
 ### <a href="#messageOrdering" name= "messageOrdering" class="anchor"> Request, Notification and Response Ordering </a>
 
-Responses to requests should be sent in roughly the same order as the requests appear on the server or client side. So for example if a server receives a `textDocument/completion` request and then a `textDocument/signatureHelp` request it will usually first return the response for the `textDocument/completion` and then the response for `textDocument/signatureHelp`.
+Responses to requests should be sent in roughly the same order as the requests appear on the server or client side. So, for example, if a server receives a `textDocument/completion` request and then a `textDocument/signatureHelp` request it will usually first return the response for the `textDocument/completion` and then the response for `textDocument/signatureHelp`.
 
-However, the server may decide to use a parallel execution strategy and may wish to return responses in a different order than the requests were received. The server may do so as long as this reordering doesn't affect the correctness of the responses. For example, reordering the result of `textDocument/completion` and `textDocument/signatureHelp` is allowed, as these each of these requests usually won't affect the output of the other. On the other hand, the server most likely should not reorder `textDocument/definition` and `textDocument/rename` requests, since the executing the latter may affect the result of the former.
+However, the server may decide to use a parallel execution strategy and may wish to return responses in a different order than the requests were received. The server may do so as long as this reordering doesn't affect the correctness of the responses. For example, reordering the result of `textDocument/completion` and `textDocument/signatureHelp` is allowed, as each of these requests usually won't affect the output of the other. On the other hand, the server most likely should not reorder `textDocument/definition` and `textDocument/rename` requests, since executing the latter may affect the result of the former.
 
 ### <a href="#messageDocumentation" name= "messageDocumentation" class="anchor"> Message Documentation </a>
 
-As said LSP defines a set of requests, responses and notifications. Each of those are document using the following format:
+As said, LSP defines a set of requests, responses and notifications. Each of those are documented using the following format:
 
 * a header describing the request
-* an optional _Client capability_ section describing the client capability of the request. This includes the client capabilities property path and JSON structure.
+* an optional _Client Capability_ section describing the client capability of the request. This includes the client capabilities property path and JSON structure.
 * an optional _Server Capability_ section describing the server capability of the request. This includes the server capabilities property path and JSON structure. Clients should ignore server capabilities they don't understand (e.g. the initialize request shouldn't fail in this case).
 * an optional _Registration Options_ section describing the registration option if the request or notification supports dynamic capability registration. See the [register](#client_registerCapability) and [unregister](#client_unregisterCapability) request for how this works in detail.
-* a _Request_ section describing the format of the request sent. The method is a string identifying the request the params are documented using a TypeScript interface. It is also documented whether the request supports work done progress and partial result progress.
+* a _Request_ section describing the format of the request sent. The method is a string identifying the request, the params are documented using a TypeScript interface. It is also documented whether the request supports work done progress and partial result progress.
 * a _Response_ section describing the format of the response. The result item describes the returned data in case of a success. The optional partial result item describes the returned data of a partial result notification. The error.data describes the returned data in case of an error. Please remember that in case of a failure the response already contains an error.code and an error.message field. These fields are only specified if the protocol forces the use of certain error codes or messages. In cases where the server can decide on these values freely they aren't listed here.
 
 
 ### <a href="#basicJsonStructures" name="basicJsonStructures" class="anchor"> Basic JSON Structures </a>
 
-There are quite some JSON structures that are shared between different requests and notifications. Their structure and capabilities are document in this section.
+There are quite some JSON structures that are shared between different requests and notifications. Their structure and capabilities are documented in this section.
 
-{% include_relative types/uri.md %}
+{% include types/uri.md %}
 {% include_relative types/regexp.md %}
-{% include_relative types/enumerations.md %}
+{% include types/enumerations.md %}
 
 {% include_relative types/textDocuments.md %}
 {% include_relative types/position.md %}
@@ -447,8 +449,10 @@ There are quite some JSON structures that are shared between different requests 
 {% include_relative types/textDocumentIdentifier.md %}
 {% include_relative types/versionedTextDocumentIdentifier.md %}
 {% include_relative types/textDocumentPositionParams.md %}
+{% include_relative types/patterns.md %}
 {% include_relative types/documentFilter.md %}
 
+{% include_relative types/stringValue.md %}
 {% include_relative types/textEdit.md %}
 {% include_relative types/textEditArray.md %}
 {% include_relative types/textDocumentEdit.md %}
@@ -463,20 +467,20 @@ There are quite some JSON structures that are shared between different requests 
 {% include_relative types/workDoneProgress.md %}
 {% include_relative types/partialResults.md %}
 {% include_relative types/partialResultParams.md %}
-{% include_relative types/traceValue.md %}
+{% include types/traceValue.md %}
 
 ### <a href="#lifeCycleMessages" name="lifeCycleMessages" class="anchor"> Server lifecycle </a>
 
 The current protocol specification defines that the lifecycle of a server is managed by the client (e.g. a tool like VS Code or Emacs). It is up to the client to decide when to start (process-wise) and when to shutdown a server.
 
 {% include_relative general/initialize.md %}
-{% include_relative general/initialized.md %}
-{% include_relative client/registerCapability.md %}
-{% include_relative client/unregisterCapability.md %}
-{% include_relative general/setTrace.md %}
-{% include_relative general/logTrace.md %}
-{% include_relative general/shutdown.md %}
-{% include_relative general/exit.md %}
+{% include messages/3.18/initialized.md %}
+{% include messages/3.18/registerCapability.md %}
+{% include messages/3.18/unregisterCapability.md %}
+{% include messages/3.18/setTrace.md %}
+{% include messages/3.18/logTrace.md %}
+{% include messages/3.18/shutdown.md %}
+{% include messages/3.18/exit.md %}
 
 ### <a href="#textDocument_synchronization" name="textDocument_synchronization" class="anchor">Text Document Synchronization</a>
 
@@ -518,6 +522,8 @@ export namespace TextDocumentSyncKind {
 	 */
 	export const Incremental = 2;
 }
+
+export type TextDocumentSyncKind = 0 | 1 | 2;
 ```
 
 <div class="anchorHolder"><a href="#textDocumentSyncOptions" name="textDocumentSyncOptions" class="linkableAnchor"></a></div>
@@ -578,36 +584,6 @@ export interface TextDocumentSyncClientCapabilities {
 }
 ```
 
-<div class="anchorHolder"><a href="#textDocumentSyncKind" name="textDocumentSyncKind" class="linkableAnchor"></a></div>
-
-```typescript
-/**
- * Defines how the host (editor) should sync document changes to the language
- * server.
- */
-export namespace TextDocumentSyncKind {
-	/**
-	 * Documents should not be synced at all.
-	 */
-	export const None = 0;
-
-	/**
-	 * Documents are synced by always sending the full content
-	 * of the document.
-	 */
-	export const Full = 1;
-
-	/**
-	 * Documents are synced by sending the full content on open.
-	 * After that only incremental updates to the document are
-	 * send.
-	 */
-	export const Incremental = 2;
-}
-
-export type TextDocumentSyncKind = 0 | 1 | 2;
-```
-
 <div class="anchorHolder"><a href="#textDocumentSyncOptions" name="textDocumentSyncOptions" class="linkableAnchor"></a></div>
 
 ```typescript
@@ -646,10 +622,12 @@ export interface TextDocumentSyncOptions {
 
 ### <a href="#languageFeatures" name="languageFeatures" class="anchor">Language Features</a>
 
-Language Feature provide the actual smarts in the language server protocol. The are usually executed on a [text document, position] tuple. The main language feature categories are:
+Language Features provide the actual smarts in the language server protocol. They are usually executed on a [text document, position] tuple. The main language feature categories are:
 
 - code comprehension features like Hover or Goto Definition.
 - coding features like diagnostics, code complete or code actions.
+
+The language features should be computed on the [synchronized state](#textDocument_synchronization) of the document.
 
 {% include_relative language/declaration.md %}
 {% include_relative language/definition.md %}
@@ -681,6 +659,7 @@ Language Feature provide the actual smarts in the language server protocol. The 
 {% include_relative language/onTypeFormatting.md %}
 {% include_relative language/rename.md %}
 {% include_relative language/linkedEditingRange.md %}
+{% include_relative language/inlineCompletion.md %}
 
 ### <a href="#workspaceFeatures" name="workspaceFeatures" class="anchor">Workspace Features</a>
 
@@ -698,44 +677,46 @@ Language Feature provide the actual smarts in the language server protocol. The 
 {% include_relative workspace/didChangeWatchedFiles.md %}
 {% include_relative workspace/executeCommand.md %}
 {% include_relative workspace/applyEdit.md %}
+{% include_relative workspace/textDocumentContent.md %}
 
 ### <a href="#windowFeatures" name="windowFeatures" class="anchor">Window Features</a>
 
-{% include_relative window/showMessage.md %}
-{% include_relative window/showMessageRequest.md %}
+{% include messages/3.18/showMessage.md %}
+{% include messages/3.18/showMessageRequest.md %}
 {% include_relative window/showDocument.md %}
-{% include_relative window/logMessage.md %}
+{% include messages/3.18/logMessage.md %}
 {% include_relative window/workDoneProgressCreate.md %}
 {% include_relative window/workDoneProgressCancel.md %}
-{% include_relative telemetry/event.md %}
+{% include messages/3.18/telemetryEvent.md %}
 
 #### <a href="#miscellaneous" name="miscellaneous" class="anchor">Miscellaneous</a>
 
 #### <a href="#implementationConsiderations" name="implementationConsiderations" class="anchor">Implementation Considerations</a>
 
-Language servers usually run in a separate process and client communicate with them in an asynchronous fashion. Additionally clients usually allow users to interact with the source code even if request results are pending. We recommend the following implementation pattern to avoid that clients apply outdated response results:
+Language servers usually run in a separate process and clients communicate with them in an asynchronous fashion. Additionally, clients usually allow users to interact with the source code even if request results are pending. We recommend the following implementation pattern to avoid that clients apply outdated response results:
 
-- if a client sends a request to the server and the client state changes in a way that it invalidates the response it should do the following:
-  - cancel the server request and ignore the result if the result is not useful for the client anymore. If necessary the client should resend the request.
-  - keep the request running if the client can still make use of the result by for example transforming it to a new result by applying the state change to the result.
-- servers should therefore not decide by themselves to cancel requests simply due to that fact that a state change notification is detected in the queue. As said the result could still be useful for the client.
-- if a server detects an internal state change (for example a project context changed) that invalidates the result of a request in execution the server can error these requests with `ContentModified`. If clients receive a `ContentModified` error, it generally should not show it in the UI for the end-user. Clients can resend the request if they know how to do so. It should be noted that for all position based requests it might be especially hard for clients to re-craft a request.
-- if a client notices that a server exits unexpectedly, it should try to restart the server. However clients should be careful not to restart a crashing server endlessly. VS Code, for example, doesn't restart a server which has crashed 5 times in the last 180 seconds.
+- if a client sends a request to the server and the client state changes in a way that invalidates the response, the client should do the following:
+  - cancel the server request and ignore the result if the result is not useful for the client anymore. If necessary, the client should resend the request.
+  - keep the request running if the client can still make use of the result by, for example, transforming it to a new result by applying the state change to the result.
+- servers should therefore not decide by themselves to cancel requests simply due to that fact that a state change notification is detected in the queue. As said, the result could still be useful for the client.
+- if a server detects an internal state change (for example, a project context changed) that invalidates the result of a request in execution, the server can error these requests with `ContentModified`. If clients receive a `ContentModified` error, they generally should not show it in the UI for the end-user. Clients can resend the request if they know how to do so. It should be noted that for all position based requests it might be especially hard for clients to re-craft a request.
+- a client should not send resolve requests for out of date objects (for example, code lenses). If a server receives a resolve request for an out of date object, the server can error these requests with `ContentModified`.
+- if a client notices that a server exits unexpectedly, it should try to restart the server. However, clients should be careful not to restart a crashing server endlessly. VS Code, for example, doesn't restart a server which has crashed 5 times in the last 180 seconds.
 
-Servers usually support different communication channels (e.g. stdio, pipes, ...). To ease the usage of servers in different clients it is highly recommended that a server implementation supports the following command line arguments to pick the communication channel:
+Servers usually support different communication channels (e.g. stdio, pipes, ...). To ease the usage of servers in different clients, it is highly recommended that a server implementation supports the following command line arguments to pick the communication channel:
 
-- **stdio**: uses stdio as the communication channel.
+- **stdio**: use stdio as the communication channel.
 - **pipe**: use pipes (Windows) or socket files (Linux, Mac) as the communication channel. The pipe / socket file name is passed as the next arg or with `--pipe=`.
-- **socket**: uses a socket as the communication channel. The port is passed as next arg or with `--port=`.
-- **node-ipc**: use node IPC communication between the client and the server. This is only support if both client and server run under node.
+- **socket**: use a socket as the communication channel. The port is passed as the next arg or with `--port=`.
+- **node-ipc**: use node IPC communication between the client and the server. This is only supported if both client and server run under node.
 
-To support the case that the editor starting a server crashes an editor should also pass its process id to the server. This allows the server to monitor the editor process and to shutdown itself if the editor process dies. The process id pass on the command line should be the same as the one passed in the initialize parameters. The command line argument to use is `--clientProcessId`.
+To support the case that the editor starting a server crashes, an editor should also pass its process ID to the server. This allows the server to monitor the editor process and to shut itself down if the editor process dies. The process ID passed on the command line should be the same as the one passed in the initialize parameters. The command line argument to use is `--clientProcessId`.
 
 #### <a href="#metaModel" name="metaModel" class="anchor">Meta Model</a>
 
 Since 3.17 there is a meta model describing the LSP protocol:
 
-- [metaModel.json](../metaModel/metaModel.json): The actual meta model for the LSP 3.17 specification
+- [metaModel.json](../metaModel/metaModel.json): The actual meta model for the LSP 3.18 specification
 - [metaModel.ts](../metaModel/metaModel.ts): A TypeScript file defining the data types that make up the meta model.
 - [metaModel.schema.json](../metaModel/metaModel.schema.json): A JSON schema file defining the data types that make up the meta model. Can be used to generate code to read the meta model JSON file.
 
@@ -743,99 +724,113 @@ Since 3.17 there is a meta model describing the LSP protocol:
 
 #### <a href="#version_3_18_0" name="version_3_18_0" class="anchor">3.18.0 (mm/dd/yyyy)</a>
 
+* Added inline completions support.
+* Added dynamic text document content support.
+* Added refresh support for folding ranges.
+* Support to format multiple ranges at once.
+* Support for snippets in workspace edits.
+* Relative Pattern support for document filters and notebook document filters.
+* Support for code action kind documentation.
+* Add support for `activeParameter` on `SignatureHelp` and `SignatureInformation` being `null`.
+* Support tooltips for `Command`.
+* Support for meta data information on workspace edits.
+* Support for snippets in text document edits.
+* Support for debug message kind.
+* Client capability to enumerate properties that can be resolved for code lenses.
+
+
 #### <a href="#version_3_17_0" name="version_3_17_0" class="anchor">3.17.0 (05/10/2022)</a>
 
 * Specify how clients will handle stale requests.
-* Add support for a completion item label details.
-* Add support for workspace symbol resolve request.
-* Add support for label details and insert text mode on completion items.
-* Add support for shared values on CompletionItemList.
-* Add support for HTML tags in Markdown.
-* Add support for collapsed text in folding.
-* Add support for trigger kinds on code action requests.
-* Add the following support to semantic tokens:
+* Added support for a completion item label details.
+* Added support for workspace symbol resolve request.
+* Added support for label details and insert text mode on completion items.
+* Added support for shared values on CompletionItemList.
+* Added support for HTML tags in Markdown.
+* Added support for collapsed text in folding.
+* Added support for trigger kinds on code action requests.
+* Added the following support to semantic tokens:
   - server cancelable
   - augmentation of syntax tokens
-* Add support to negotiate the position encoding.
-* Add support for HTML tags in markdown.
-* Add support for relative patterns in file watchers.
-* Add support for type hierarchies
-* Add support for inline values.
-* Add support for inlay hints.
-* Add support for notebook documents.
-* Add support for diagnostic pull model.
+* Added support to negotiate the position encoding.
+* Added support for relative patterns in file watchers.
+* Added support for type hierarchies
+* Added support for inline values.
+* Added support for inlay hints.
+* Added support for notebook documents.
+* Added support for diagnostic pull model.
 
 #### <a href="#version_3_16_0" name="version_3_16_0" class="anchor">3.16.0 (12/14/2020)</a>
 
-* Add support for tracing.
-* Add semantic token support.
-* Add call hierarchy support.
-* Add client capability for resolving text edits on completion items.
-* Add support for client default behavior on renames.
-* Add support for insert and replace ranges on `CompletionItem`.
-* Add support for diagnostic code descriptions.
-* Add support for document symbol provider label.
-* Add support for tags on `SymbolInformation` and `DocumentSymbol`.
-* Add support for moniker request method.
-* Add support for code action `data` property.
-* Add support for code action `disabled` property.
-* Add support for code action resolve request.
-* Add support for diagnostic `data` property.
-* Add support for signature information `activeParameter` property.
-* Add support for `workspace/didCreateFiles` notifications and `workspace/willCreateFiles` requests.
-* Add support for `workspace/didRenameFiles` notifications and `workspace/willRenameFiles` requests.
-* Add support for `workspace/didDeleteFiles` notifications and `workspace/willDeleteFiles` requests.
-* Add client capability to signal whether the client normalizes line endings.
-* Add support to preserve additional attributes on `MessageActionItem`.
-* Add support to provide the clients locale in the initialize call.
-* Add support for opening and showing a document in the client user interface.
-* Add support for linked editing.
-* Add support for change annotations in text edits as well as in create file, rename file and delete file operations.
+* Added support for tracing.
+* Added semantic token support.
+* Added call hierarchy support.
+* Added client capability for resolving text edits on completion items.
+* Added support for client default behavior on renames.
+* Added support for insert and replace ranges on `CompletionItem`.
+* Added support for diagnostic code descriptions.
+* Added support for document symbol provider label.
+* Added support for tags on `SymbolInformation` and `DocumentSymbol`.
+* Added support for moniker request method.
+* Added support for code action `data` property.
+* Added support for code action `disabled` property.
+* Added support for code action resolve request.
+* Added support for diagnostic `data` property.
+* Added support for signature information `activeParameter` property.
+* Added support for `workspace/didCreateFiles` notifications and `workspace/willCreateFiles` requests.
+* Added support for `workspace/didRenameFiles` notifications and `workspace/willRenameFiles` requests.
+* Added support for `workspace/didDeleteFiles` notifications and `workspace/willDeleteFiles` requests.
+* Added client capability to signal whether the client normalizes line endings.
+* Added support to preserve additional attributes on `MessageActionItem`.
+* Added support to provide the clients locale in the initialize call.
+* Added support for opening and showing a document in the client user interface.
+* Added support for linked editing.
+* Added support for change annotations in text edits as well as in create file, rename file and delete file operations.
 
 #### <a href="#version_3_15_0" name="version_3_15_0" class="anchor">3.15.0 (01/14/2020)</a>
 
-* Add generic progress reporting support.
-* Add specific work done progress reporting support to requests where applicable.
-* Add specific partial result progress support to requests where applicable.
-* Add support for `textDocument/selectionRange`.
-* Add support for server and client information.
-* Add signature help context.
-* Add Erlang and Elixir to the list of supported programming languages
-* Add `version` on `PublishDiagnosticsParams`
-* Add `CodeAction#isPreferred` support.
-* Add `CompletionItem#tag` support.
-* Add `Diagnostic#tag` support.
-* Add `DocumentLink#tooltip` support.
-* Add `trimTrailingWhitespace`, `insertFinalNewline` and `trimFinalNewlines` to `FormattingOptions`.
+* Added generic progress reporting support.
+* Added specific work done progress reporting support to requests where applicable.
+* Added specific partial result progress support to requests where applicable.
+* Added support for `textDocument/selectionRange`.
+* Added support for server and client information.
+* Added signature help context.
+* Added Erlang and Elixir to the list of supported programming languages
+* Added `version` on `PublishDiagnosticsParams`
+* Added `CodeAction#isPreferred` support.
+* Added `CompletionItem#tag` support.
+* Added `Diagnostic#tag` support.
+* Added `DocumentLink#tooltip` support.
+* Added `trimTrailingWhitespace`, `insertFinalNewline` and `trimFinalNewlines` to `FormattingOptions`.
 * Clarified `WorkspaceSymbolParams#query` parameter.
 
 
 #### <a href="#version_3_14_0" name="version_3_14_0" class="anchor">3.14.0 (12/13/2018)</a>
 
-* Add support for signature label offsets.
-* Add support for location links.
-* Add support for `textDocument/declaration` request.
+* Added support for signature label offsets.
+* Added support for location links.
+* Added support for `textDocument/declaration` request.
 
 #### <a href="#version_3_13_0" name="version_3_13_0" class="anchor">3.13.0 (9/11/2018)</a>
 
-* Add support for file and folder operations (create, rename, move) to workspace edits.
+* Added support for file and folder operations (create, rename, move) to workspace edits.
 
 #### <a href="#version_3_12_0" name="version_3_12_0" class="anchor">3.12.0 (8/23/2018)</a>
 
-* Add support for `textDocument/prepareRename` request.
+* Added support for `textDocument/prepareRename` request.
 
 #### <a href="#version_3_11_0" name="version_3_11_0" class="anchor">3.11.0 (8/21/2018)</a>
 
-* Add support for CodeActionOptions to allow a server to provide a list of code action it supports.
+* Added support for CodeActionOptions to allow a server to provide a list of code action it supports.
 
 #### <a href="#version_3_10_0" name="version_3_10_0" class="anchor">3.10.0 (7/23/2018)</a>
 
-* Add support for hierarchical document symbols as a valid response to a `textDocument/documentSymbol` request.
-* Add support for folding ranges as a valid response to a `textDocument/foldingRange` request.
+* Added support for hierarchical document symbols as a valid response to a `textDocument/documentSymbol` request.
+* Added support for folding ranges as a valid response to a `textDocument/foldingRange` request.
 
 #### <a href="#version_3_9_0" name="version_3_9_0" class="anchor">3.9.0 (7/10/2018)</a>
 
-* Add support for `preselect` property in `CompletionItem`
+* Added support for `preselect` property in `CompletionItem`
 
 #### <a href="#version_3_8_0" name="version_3_8_0" class="anchor">3.8.0 (6/11/2018)</a>
 
@@ -886,9 +881,9 @@ Decided to skip this version to bring the protocol version number in sync the wi
 
 #### <a href="#version_3_0_0" name="version_3_0_0" class="anchor">3.0 Version</a>
 
-- add support for client feature flags to support that servers can adapt to different client capabilities. An example is the new `textDocument/willSaveWaitUntil` request which not all clients might be able to support. If the feature is disabled in the client capabilities sent on the initialize request, the server can't rely on receiving the request.
-- add support to experiment with new features. The new `ClientCapabilities.experimental` section together with feature flags allow servers to provide experimental feature without the need of ALL clients to adopt them immediately.
-- servers can more dynamically react to client features. Capabilities can now be registered and unregistered after the initialize request using the new `client/registerCapability` and `client/unregisterCapability`. This for example allows servers to react to settings or configuration changes without a restart.
-- add support for `textDocument/willSave` notification and `textDocument/willSaveWaitUntil` request.
-- add support for `textDocument/documentLink` request.
-- add a `rootUri` property to the initializeParams in favor of the `rootPath` property.
+- Added support for client feature flags to support that servers can adapt to different client capabilities. An example is the new `textDocument/willSaveWaitUntil` request which not all clients might be able to support. If the feature is disabled in the client capabilities sent on the initialize request, the server can't rely on receiving the request.
+- Added support to experiment with new features. The new `ClientCapabilities.experimental` section together with feature flags allow servers to provide experimental feature without the need of ALL clients to adopt them immediately.
+- servers can more dynamically react to client features. Capabilities can now be registered and unregistered after the initialize request using the new `client/registerCapability` and `client/unregisterCapability`. This, for example, allows servers to react to settings or configuration changes without a restart.
+- Added support for `textDocument/willSave` notification and `textDocument/willSaveWaitUntil` request.
+- Added support for `textDocument/documentLink` request.
+- Added a `rootUri` property to the initializeParams in favor of the `rootPath` property.

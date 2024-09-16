@@ -1,8 +1,8 @@
 #### <a href="#initialize" name="initialize" class="anchor">Initialize Request (:leftwards_arrow_with_hook:)</a>
 
-The initialize request is sent as the first request from the client to the server. If the server receives a request or notification before the `initialize` request it should act as follows:
+The initialize request is sent as the first request from the client to the server. If the server receives a request or notification before the `initialize` request, it should act as follows:
 
-* For a request the response should be an error with `code: -32002`. The message can be picked by the server.
+* For a request, the response should be an error with `code: -32002`. The message can be picked by the server.
 * Notifications should be dropped, except for the exit notification. This will allow the exit of a server without an initialize request.
 
 Until the server has responded to the `initialize` request with an `InitializeResult`, the client must not send any additional requests or notifications to the server. In addition the server is not allowed to send any requests or notifications to the client until it has responded with an `InitializeResult`, with the exception that during the `initialize` request the server is allowed to send the notifications `window/showMessage`, `window/logMessage` and `telemetry/event` as well as the `window/showMessageRequest` request to the client. In case the client sets up a progress token in the initialize params (e.g. property `workDoneToken`) the server is also allowed to use that token (and only that token) using the `$/progress` notification sent from the server to the client.
@@ -199,11 +199,12 @@ export interface TextDocumentClientCapabilities {
 	formatting?: DocumentFormattingClientCapabilities;
 
 	/**
-	 * Capabilities specific to the `textDocument/rangeFormatting` request.
+	 * Capabilities specific to the `textDocument/rangeFormatting` and
+	 * `textDocument/rangesFormatting requests.
 	 */
 	rangeFormatting?: DocumentRangeFormattingClientCapabilities;
 
-	/** request.
+	/**
 	 * Capabilities specific to the `textDocument/onTypeFormatting` request.
 	 */
 	onTypeFormatting?: DocumentOnTypeFormattingClientCapabilities;
@@ -288,6 +289,13 @@ export interface TextDocumentClientCapabilities {
 	 * @since 3.17.0
 	 */
 	diagnostic?: DiagnosticClientCapabilities;
+
+	/**
+	 * Capabilities specific to the `textDocument/inlineCompletion` request.
+	 * 
+	 * @since 3.18.0
+	 */
+	inlineCompletion?: InlineCompletionClientCapabilities;
 }
 ```
 
@@ -869,6 +877,35 @@ interface ServerCapabilities {
 	 * The server provides workspace symbol support.
 	 */
 	workspaceSymbolProvider?: boolean | WorkspaceSymbolOptions;
+
+	/**
+	 * The server provides inline completions.
+	 * 
+	 * @since 3.18.0
+	 */
+	inlineCompletionProvider?: boolean | InlineCompletionOptions;
+
+	/**
+	 * Text document specific server capabilities.
+	 * 
+	 * @since 3.18.0
+	 */
+	textDocument?: {
+		/**
+		 * Capabilities specific to the diagnostic pull model.
+		 * 
+		 * @since 3.18.0
+		 */
+		diagnostic?: {
+			/**
+			 * Whether the server supports `MarkupContent` in diagnostic messages.
+			 * 
+			 * @since 3.18.0
+			 * @proposed
+			 */
+			markupMessageSupport?: boolean;
+		};
+	};
 
 	/**
 	 * Workspace specific server capabilities

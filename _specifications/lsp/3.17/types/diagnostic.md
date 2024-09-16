@@ -10,8 +10,10 @@ export interface Diagnostic {
 	range: Range;
 
 	/**
-	 * The diagnostic's severity. Can be omitted. If omitted it is up to the
-	 * client to interpret diagnostics as error, warning, info or hint.
+	 * The diagnostic's severity. To avoid interpretation mismatches when a
+	 * server is used with different clients it is highly recommended that
+	 * servers always provide a severity value. If omitted, it’s recommended
+	 * for the client to interpret it as an Error severity.
 	 */
 	severity?: DiagnosticSeverity;
 
@@ -58,7 +60,7 @@ export interface Diagnostic {
 	 *
 	 * @since 3.16.0
 	 */
-	data?: unknown;
+	data?: LSPAny;
 }
 ```
 

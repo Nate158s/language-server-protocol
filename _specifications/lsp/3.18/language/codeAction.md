@@ -1,15 +1,19 @@
 #### <a href="#textDocument_codeAction" name="textDocument_codeAction" class="anchor">Code Action Request (:leftwards_arrow_with_hook:)</a>
 
-The code action request is sent from the client to the server to compute commands for a given text document and range. These commands are typically code fixes to either fix problems or to beautify/refactor code. The result of a `textDocument/codeAction` request is an array of `Command` literals which are typically presented in the user interface. To ensure that a server is useful in many clients the commands specified in a code actions should be handled by the server and not by the client (see `workspace/executeCommand` and `ServerCapabilities.executeCommandProvider`). If the client supports providing edits with a code action then that mode should be used.
+The code action request is sent from the client to the server to compute relevant commands for a given text document and range. These commands are typically code fixes to either fix problems or to beautify/refactor code. The result of a `textDocument/codeAction` request is an array of `Command` literals which are typically presented in the user interface. Servers should only return relevant commands and avoid returning large lists of code actions, which can overwhelm the user and make it more difficult for them to find the code action they are after.
+
+To ensure that a server is useful in many clients, the commands specified in code actions should be handled by the server and not by the client (see `workspace/executeCommand` and `ServerCapabilities.executeCommandProvider`). If the client supports providing edits with a code action then that mode should be used.
 
 *Since version 3.16.0:* a client can offer a server to delay the computation of code action properties during a 'textDocument/codeAction' request:
 
-This is useful for cases where it is expensive to compute the value of a property (for example the `edit` property). Clients signal this through the `codeAction.resolveSupport` capability which lists all properties a client can resolve lazily. The server capability `codeActionProvider.resolveProvider` signals that a server will offer a `codeAction/resolve` route. To help servers to uniquely identify a code action in the resolve request, a code action literal can optional carry a data property. This is also guarded by an additional client capability `codeAction.dataSupport`. In general, a client should offer data support if it offers resolve support. It should also be noted that servers shouldn't alter existing attributes of a code action in a codeAction/resolve request.
+This is useful for cases where it is expensive to compute the value of a property (for example, the `edit` property). Clients signal this through the `codeAction.resolveSupport` capability which lists all properties a client can resolve lazily. The server capability `codeActionProvider.resolveProvider` signals that a server will offer a `codeAction/resolve` route. To help servers to uniquely identify a code action in the resolve request, a code action literal can optionally carry a data property. This is also guarded by an additional client capability `codeAction.dataSupport`. In general, a client should offer data support if it offers resolve support. It should also be noted that servers shouldn't alter existing attributes of a code action in a codeAction/resolve request.
 
 > *Since version 3.8.0:* support for CodeAction literals to enable the following scenarios:
 
-- the ability to directly return a workspace edit from the code action request. This avoids having another server roundtrip to execute an actual code action. However server providers should be aware that if the code action is expensive to compute or the edits are huge it might still be beneficial if the result is simply a command and the actual edit is only computed when needed.
-- the ability to group code actions using a kind. Clients are allowed to ignore that information. However it allows them to better group code action for example into corresponding menus (e.g. all refactor code actions into a refactor menu).
+- the ability to directly return a workspace edit from the code action request. This avoids having another server roundtrip to execute an actual code action. However, server providers should be aware that if the code action is expensive to compute or the edits are huge, it might still be beneficial if the result is simply a command and the actual edit is only computed when needed.
+- the ability to group code actions using a kind. Clients are allowed to ignore that information. However, it allows them to better group code actions, for example, into corresponding menus (e.g. all refactor code actions into a refactor menu).
+
+In version 1.0 of the protocol, there weren't any source or refactoring code actions. Code actions were solely used to (quick) fix code, not to write / rewrite code. So if a client asks for code actions without any kind, the standard quick fix code actions should be returned.
 
 Clients need to announce their support for code action literals (e.g. literals of type `CodeAction`) and code action kinds via the corresponding client capability `codeAction.codeActionLiteralSupport`.
 
@@ -40,8 +44,8 @@ export interface CodeActionClientCapabilities {
 		codeActionKind: {
 
 			/**
-			 * The code action kind values the client supports. When this
-			 * property exists the client also guarantees that it will
+			 * The code action kind values that the client supports. When this
+			 * property exists, the client also guarantees that it will
 			 * handle values outside its set gracefully and falls back
 			 * to a default value when unknown.
 			 */
@@ -72,7 +76,6 @@ export interface CodeActionClientCapabilities {
 	 */
 	dataSupport?: boolean;
 
-
 	/**
 	 * Whether the client supports resolving additional code action
 	 * properties via a separate `codeAction/resolve` request.
@@ -89,13 +92,21 @@ export interface CodeActionClientCapabilities {
 	/**
 	 * Whether the client honors the change annotations in
 	 * text edits and resource operations returned via the
-	 * `CodeAction#edit` property by for example presenting
+	 * `CodeAction#edit` property by, for example, presenting
 	 * the workspace edit in the user interface and asking
 	 * for confirmation.
 	 *
 	 * @since 3.16.0
 	 */
 	honorsChangeAnnotations?: boolean;
+
+	/**
+	 * Whether the client supports documentation for a class of code actions.
+	 *
+	 * @since 3.18.0
+	 * @proposed
+	 */
+	 documentationSupport?: boolean;
 }
 ```
 
@@ -106,6 +117,33 @@ _Server Capability_:
 <div class="anchorHolder"><a href="#codeActionOptions" name="codeActionOptions" class="linkableAnchor"></a></div>
 
 ```typescript
+/**
+ * Documentation for a class of code actions.
+ *
+ * @since 3.18.0
+ * @proposed
+ */
+export interface CodeActionKindDocumentation {
+	/**
+	 * The kind of the code action being documented.
+	 *
+	 * If the kind is generic, such as `CodeActionKind.Refactor`, the
+	 * documentation will be shown whenever any refactorings are returned. If
+	 * the kind is more specific, such as `CodeActionKind.RefactorExtract`, the
+	 * documentation will only be shown when extract refactoring code actions
+	 * are returned.
+	 */
+	kind: CodeActionKind;
+
+	/**
+	 * Command that is used to display the documentation to the user.
+	 *
+	 * The title of this documentation code action is taken
+	 * from {@linkcode Command.title}
+	 */
+	command: Command;
+}
+
 export interface CodeActionOptions extends WorkDoneProgressOptions {
 	/**
 	 * CodeActionKinds that this server may return.
@@ -114,6 +152,29 @@ export interface CodeActionOptions extends WorkDoneProgressOptions {
 	 * or the server may list out every specific kind they provide.
 	 */
 	codeActionKinds?: CodeActionKind[];
+
+	/**
+	 * Static documentation for a class of code actions.
+	 *
+	 * Documentation from the provider should be shown in the code actions
+	 * menu if either:
+	 *
+	 * - Code actions of `kind` are requested by the editor. In this case,
+	 *   the editor will show the documentation that most closely matches the
+	 *   requested code action kind. For example, if a provider has
+	 *   documentation for both `Refactor` and `RefactorExtract`, when the
+	 *   user requests code actions for `RefactorExtract`, the editor will use
+	 *   the documentation for `RefactorExtract` instead of the documentation
+	 *   for `Refactor`.
+	 *
+	 * - Any code actions of `kind` are returned by the provider.
+	 *
+	 * At most one documentation entry should be shown per provider.
+	 *
+	 * @since 3.18.0
+	 * @proposed
+	 */
+	documentation?: CodeActionKindDocumentation[];
 
 	/**
 	 * The server provides support to resolve additional
@@ -143,7 +204,7 @@ _Request_:
 
 ```typescript
 /**
- * Params for the CodeActionRequest
+ * Params for the CodeActionRequest.
  */
 export interface CodeActionParams extends WorkDoneProgressParams,
 	PartialResultParams {
@@ -173,8 +234,8 @@ export interface CodeActionParams extends WorkDoneProgressParams,
  * Kinds are a hierarchical list of identifiers separated by `.`,
  * e.g. `"refactor.extract.function"`.
  *
- * The set of kinds is open and client needs to announce the kinds it supports
- * to the server during initialization.
+ * The set of kinds is open and the client needs to announce
+ * the kinds it supports to the server during initialization.
  */
 export type CodeActionKind = string;
 
@@ -232,7 +293,7 @@ export namespace CodeActionKind {
 	 * - Move a property between classes
 	 * - Move method to base class
 	 * - ...
-	 * 
+	 *
 	 * @since 3.18.0 - proposed
 	 */
 	export const RefactorMove: CodeActionKind = 'refactor.move';
@@ -274,6 +335,14 @@ export namespace CodeActionKind {
 	 * @since 3.17.0
 	 */
 	export const SourceFixAll: CodeActionKind = 'source.fixAll';
+
+	/**
+	 * Base kind for all code actions applying to the entire notebook's scope. CodeActionKinds using
+	 * this should always begin with `notebook.`
+	 *
+	 * @since 3.18.0
+	 */
+	export const Notebook: CodeActionKind = 'notebook';
 }
 ```
 
@@ -292,6 +361,11 @@ export interface CodeActionContext {
 	 * for the given range. There is no guarantee that these accurately reflect
 	 * the error state of the resource. The primary parameter
 	 * to compute code actions is the provided range.
+	 * 
+	 * Note that the client should check the `textDocument.diagnostic.markupMessageSupport`
+	 * server capability before sending diagnostics with markup messages to a server.
+	 * Diagnostics with markup messages should be excluded for servers that don't support
+	 * them.
 	 */
 	diagnostics: Diagnostic[];
 
@@ -299,7 +373,7 @@ export interface CodeActionContext {
 	 * Requested kind of actions to return.
 	 *
 	 * Actions not of this kind are filtered out by the client before being
-	 * shown. So servers can omit computing them.
+	 * shown, so servers can omit computing them.
 	 */
 	only?: CodeActionKind[];
 
@@ -329,8 +403,8 @@ export namespace CodeActionTriggerKind {
 	/**
 	 * Code actions were requested automatically.
 	 *
-	 * This typically happens when current selection in a file changes, but can
-	 * also be triggered when file content changes.
+	 * This typically happens when the current selection in a file changes,
+	 * but can also be triggered when file content changes.
 	 */
 	export const Automatic: 2 = 2;
 }
@@ -354,7 +428,7 @@ _Response_:
 export interface CodeAction {
 
 	/**
-	 * A short, human-readable, title for this code action.
+	 * A short, human-readable title for this code action.
 	 */
 	title: string;
 
@@ -443,7 +517,7 @@ export interface CodeAction {
 The request is sent from the client to the server to resolve additional information for a given code action. This is usually used to compute
 the `edit` property of a code action to avoid its unnecessary computation during the `textDocument/codeAction` request.
 
-Consider the clients announces the `edit` property as a property that can be resolved lazy using the client capability
+Consider the clients announcing the `edit` property as a property that can be resolved lazily using the client capability.
 
 ```typescript
 textDocument.codeAction.resolveSupport = { properties: ['edit'] };

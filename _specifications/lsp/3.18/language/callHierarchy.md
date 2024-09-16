@@ -2,10 +2,10 @@
 
 > *Since version 3.16.0*
 
-The call hierarchy request is sent from the client to the server to return a call hierarchy for the language element of given text document positions. The call hierarchy requests are executed in two steps:
+The call hierarchy request is sent from the client to the server to return a call hierarchy for the language element of the given text document positions. The call hierarchy requests are executed in two steps:
 
   1. first a call hierarchy item is resolved for the given text document position
-  1. for a call hierarchy item the incoming or outgoing call hierarchy items are resolved.
+  1. for a call hierarchy item, the incoming or outgoing call hierarchy items are resolved.
 
 _Client Capability_:
 
@@ -112,7 +112,7 @@ export interface CallHierarchyItem {
 	 * A data entry field that is preserved between a call hierarchy prepare and
 	 * incoming calls or outgoing calls requests.
 	 */
-	data?: unknown;
+	data?: LSPAny;
 }
 ```
 
@@ -199,7 +199,7 @@ export interface CallHierarchyOutgoingCall {
 
 	/**
 	 * The range at which this item is called. This is the range relative to
-	 * the caller, e.g the item passed to `callHierarchy/outgoingCalls` request.
+	 * the caller, e.g., the item passed to `callHierarchy/outgoingCalls` request.
 	 */
 	fromRanges: Range[];
 }
