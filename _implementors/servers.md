@@ -294,4 +294,5 @@ index: 1
 | * | [iamcco](https://github.com/iamcco) | [diagnostic-languageserver](https://github.com/iamcco/diagnostic-languageserver) | TypeScript |
 | * | [daquexian](https://github.com/daquexian) | [tagls](https://github.com/daquexian/tagls) | Python |
 | * | [Sonar](https://github.com/SonarSource) | [SonarLint Language Server](https://github.com/SonarSource/sonarlint-language-server) | Java |
+| * | [kbwo](https://github.com/kbwo) | [testing-language-server](https://github.com/kbwo/testing-language-server) | Rust |
 {: .table .table-bordered .table-responsive}
